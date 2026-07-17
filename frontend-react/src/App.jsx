@@ -71,7 +71,6 @@ function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
-    window.WeatherFx?.setTheme(theme);
     try {
       localStorage.setItem("todoApp_theme", theme);
     } catch {

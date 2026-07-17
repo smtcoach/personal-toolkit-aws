@@ -45,7 +45,6 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system design and deployment
 ```text
 todo_aws/
 ├── frontend-react/              React + Vite SPA deployed to S3
-├── frontend/                    Legacy vanilla JavaScript frontend
 ├── backend/lambda_function.py    Python Lambda handler and route logic
 ├── infra/template.yaml           AWS SAM template
 ├── tests/                        Unit tests for auth and isolation behavior

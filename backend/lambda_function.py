@@ -120,7 +120,7 @@ def _public_task(item):
 ATOM_NS = "{http://www.w3.org/2005/Atom}"
 
 # Major international outlets. GET /news = headlines + links only.
-# Keep in sync with frontend/app.js CLIENT_NEWS_FEEDS.
+# Keep in sync with frontend-react/src/news.js NEWS_FEEDS.
 # Many RSS hosts block non-browser user-agents; match Yahoo path style for fewer empty fetches.
 _RSS_FEED_UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "

@@ -1,6 +1,6 @@
 # Archived Frontend Design Brief
 
-This document records an earlier UI redesign brief for the Personal Toolkit dashboard. The active implementation now lives in `frontend/`, and the current project documentation lives in the repository root.
+This document records an earlier UI redesign brief for the Personal Toolkit dashboard. The active implementation now lives in `frontend-react/`, and the current project documentation lives in the repository root.
 
 ## Design Direction
 

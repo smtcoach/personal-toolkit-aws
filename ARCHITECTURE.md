@@ -121,7 +121,7 @@ This validates application behavior, frontend syntax, and infrastructure buildab
 - The CloudFront URL should be used as the production callback/logout URL in Cognito.
 - The S3 website endpoint is `http://` and cannot be used directly as a Cognito production callback URL.
 - `frontend-react/public/config.js` must be updated with SAM outputs after backend changes.
-- The legacy `frontend/` directory is retained temporarily as a rollback reference and is not deployed.
+- Previous frontend implementations remain recoverable through Git history.
 - `.aws-sam/` is a generated build directory and is ignored by Git.
 
 ## Future Hardening

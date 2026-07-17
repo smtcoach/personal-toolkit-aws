@@ -17,7 +17,6 @@ todo_aws/
 │   ├── src/App.jsx           # Application shell and authentication state
 │   ├── src/components/       # Dashboard feature panels
 │   └── package.json
-├── frontend/                 # Legacy vanilla JavaScript rollback reference
 ├── backend/
 │   └── lambda_function.py    # Single Lambda router
 ├── infra/
@@ -148,7 +147,7 @@ Browser
 
 ### 3.2 Frontend
 
-The active frontend is a React SPA in `frontend-react/`, built with Vite. The previous vanilla JavaScript implementation remains in `frontend/` temporarily as a rollback reference.
+The frontend is a React SPA in `frontend-react/`, built with Vite. Previous implementations remain recoverable through Git history.
 
 Main files:
 
