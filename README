@@ -1,6 +1,6 @@
 # Personal Toolkit AWS
 
-Personal Toolkit is a serverless personal dashboard built with AWS SAM, Amazon Cognito, API Gateway, Lambda, DynamoDB, S3, CloudFront, and vanilla JavaScript.
+Personal Toolkit is a serverless personal dashboard built with React, Vite, AWS SAM, Amazon Cognito, API Gateway, Lambda, DynamoDB, S3, and CloudFront.
 
 The application combines authenticated personal tasks, weather, international news, and local movie discovery in a single private dashboard. It is designed as a production-oriented portfolio project rather than a basic CRUD demo: authentication, per-user data isolation, infrastructure as code, and GitHub Actions CI/CD are all included.
 
@@ -44,7 +44,8 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system design and deployment
 
 ```text
 todo_aws/
-├── frontend/                    Static SPA: HTML, CSS, JavaScript
+├── frontend-react/              React + Vite SPA deployed to S3
+├── frontend/                    Legacy vanilla JavaScript frontend
 ├── backend/lambda_function.py    Python Lambda handler and route logic
 ├── infra/template.yaml           AWS SAM template
 ├── tests/                        Unit tests for auth and isolation behavior
@@ -59,7 +60,7 @@ todo_aws/
 ```bash
 python3 -m unittest discover -s tests
 python3 -m py_compile backend/lambda_function.py tests/test_lambda_auth.py tests/test_frontend_auth.py
-node --check frontend/app.js
+cd frontend-react && npm ci && npm run build
 sam validate --template-file infra/template.yaml
 sam build --template-file infra/template.yaml
 ```
@@ -67,8 +68,9 @@ sam build --template-file infra/template.yaml
 ## Local Frontend Preview
 
 ```bash
-cd frontend
-python3 -m http.server 8000
+cd frontend-react
+npm install
+npm run dev
 ```
 
 Then open:
@@ -83,9 +85,9 @@ The SAM template keeps localhost callback URLs available for local Cognito testi
 
 The project uses GitHub Actions:
 
-- `CI`: runs Python unit tests, Python compile checks, frontend JavaScript syntax checks, `sam validate`, and `sam build`.
+- `CI`: runs Python unit tests, Python compile checks, a production React build, `sam validate`, and `sam build`.
 - `Deploy Backend`: manually deploys the AWS SAM backend stack with Cognito, API Gateway, Lambda, and DynamoDB.
-- `Deploy Frontend`: manually syncs `frontend/` to S3 and invalidates the CloudFront distribution.
+- `Deploy Frontend`: builds the React app, syncs `frontend-react/dist/` to S3, and invalidates the CloudFront distribution.
 
 Required GitHub repository secrets:
 
@@ -97,7 +99,7 @@ TMDB_API_KEY        # optional for deployment, required for the movie feature
 
 ## Deployment Notes
 
-After backend deployment, copy the SAM outputs into `frontend/config.js`:
+After backend deployment, copy the SAM outputs into `frontend-react/public/config.js`:
 
 ```text
 ApiUrl

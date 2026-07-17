@@ -1,0 +1,7 @@
+@import "../../frontend/styles.css";
+
+.config-readout {
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}

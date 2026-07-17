@@ -76,7 +76,7 @@ The active backend infrastructure is defined in `infra/template.yaml` and deploy
 
 The frontend is hosted separately:
 
-- S3 bucket stores static assets from `frontend/`.
+- S3 bucket stores the Vite production build from `frontend-react/dist/`.
 - CloudFront serves the SPA over HTTPS.
 - CloudFront invalidation runs after frontend deployment.
 
@@ -89,7 +89,7 @@ The frontend is hosted separately:
 ```text
 python3 -m unittest discover -s tests
 python3 -m py_compile ...
-node --check frontend/app.js
+cd frontend-react && npm ci && npm run build
 sam validate --template-file infra/template.yaml
 sam build --template-file infra/template.yaml
 ```
@@ -111,8 +111,8 @@ This validates application behavior, frontend syntax, and infrastructure buildab
 `.github/workflows/deploy-frontend.yml` is manually triggered. It:
 
 1. Configures AWS credentials from GitHub Secrets.
-2. Checks `frontend/app.js`.
-3. Syncs `frontend/` to S3.
+2. Installs dependencies and creates a production React build.
+3. Syncs `frontend-react/dist/` to S3 and applies long-lived caching to versioned assets.
 4. Invalidates the CloudFront distribution.
 5. Prints the S3 and CloudFront URLs.
 
@@ -120,8 +120,8 @@ This validates application behavior, frontend syntax, and infrastructure buildab
 
 - The CloudFront URL should be used as the production callback/logout URL in Cognito.
 - The S3 website endpoint is `http://` and cannot be used directly as a Cognito production callback URL.
-- `frontend/config.js` must be updated with SAM outputs after backend changes.
-- `config.example.js` is excluded from frontend deployment.
+- `frontend-react/public/config.js` must be updated with SAM outputs after backend changes.
+- The legacy `frontend/` directory is retained temporarily as a rollback reference and is not deployed.
 - `.aws-sam/` is a generated build directory and is ignored by Git.
 
 ## Future Hardening

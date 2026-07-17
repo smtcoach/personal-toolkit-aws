@@ -12,13 +12,12 @@ News and movie data are aggregated by Lambda from external providers. Weather da
 
 ```text
 todo_aws/
-├── frontend/                 # Static SPA with no build step
-│   ├── index.html
-│   ├── app.js
-│   ├── styles.css
-│   ├── weather-fx.js
-│   ├── config.js             # Environment-specific frontend config
-│   └── config.example.js     # Config template
+├── frontend-react/           # React + Vite SPA
+│   ├── public/config.js      # Environment-specific frontend config
+│   ├── src/App.jsx           # Application shell and authentication state
+│   ├── src/components/       # Dashboard feature panels
+│   └── package.json
+├── frontend/                 # Legacy vanilla JavaScript rollback reference
 ├── backend/
 │   └── lambda_function.py    # Single Lambda router
 ├── infra/
@@ -51,7 +50,7 @@ Capabilities:
 - Read the authenticated user only from API Gateway authorizer JWT claims.
 - Hide the dashboard when signed out and show an authentication panel.
 - Display the signed-in user email or Cognito username.
-- Detect missing Cognito configuration in `frontend/config.js`.
+- Detect missing Cognito configuration in `frontend-react/public/config.js`.
 - Verify OAuth `state`, exchange the authorization code, and clean callback query parameters.
 - Use 1-hour access and ID tokens and a 30-day refresh token by default.
 
@@ -67,6 +66,7 @@ Capabilities:
 - Load tasks on dashboard startup.
 - Mark tasks complete or active.
 - Star important tasks.
+- Assign `low`, `normal`, or `high` priority when creating or updating a task.
 - Rename active tasks by double-clicking the title.
 - Delete tasks after confirmation.
 - Filter by `All`, `Active`, and `Starred`.
@@ -84,7 +84,6 @@ Capabilities:
 - Browser geolocation with OpenStreetMap Nominatim reverse geocoding.
 - Current temperature, condition, humidity, wind speed, and updated time.
 - 5-day forecast with weather icons and high/low temperatures.
-- Canvas-based weather effects for rain, snow, storms, and related conditions.
 - Saved selected city in `localStorage`.
 
 ### 2.4 International News
@@ -136,7 +135,7 @@ Capabilities:
 ```text
 Browser
   ├─ CloudFront HTTPS distribution
-  ├─ S3 static frontend: index.html / styles.css / config.js / app.js / weather-fx.js
+  ├─ S3 static frontend: Vite output from frontend-react/dist
   ├─ Cognito Hosted UI: OAuth Code + PKCE
   ├─ Direct external APIs: Open-Meteo, OpenStreetMap Nominatim, RSS fallback proxies
   └─ API Gateway HTTP API
@@ -149,19 +148,19 @@ Browser
 
 ### 3.2 Frontend
 
-The frontend is a vanilla JavaScript SPA in `frontend/`.
+The active frontend is a React SPA in `frontend-react/`, built with Vite. The previous vanilla JavaScript implementation remains in `frontend/` temporarily as a rollback reference.
 
 Main files:
 
-- `index.html`: page structure and dashboard panels.
-- `config.js`: deployed API and Cognito values.
-- `config.example.js`: example configuration.
-- `styles.css`: layout, themes, responsive behavior, and visual styling.
-- `app.js`: authentication, tasks, weather, news, movies, and UI state.
-- `weather-fx.js`: weather card canvas effects.
-- `icon.png`: site icon.
+- `src/App.jsx`: application shell, authentication state, theme, and responsive dashboard layout.
+- `src/auth.js`: Cognito Authorization Code + PKCE flow and token refresh.
+- `src/api.js`: authenticated backend requests.
+- `src/components/`: task, weather, news, and movie panels.
+- `src/weather.js` and `src/news.js`: browser-side external data helpers.
+- `public/config.js`: deployed API and Cognito values copied into the Vite build.
+- `src/styles.css`: React entry point for the existing dashboard design system.
 
-`config.js` must load before `app.js`.
+`public/config.js` loads before the React entry module so runtime AWS values are available during application startup.
 
 ### 3.3 Backend
 
@@ -192,6 +191,7 @@ Public task fields:
 - `title`
 - `completed`
 - `starred`
+- `priority`
 - `createdAt`
 - `updatedAt`
 
@@ -360,7 +360,7 @@ GET /movies?region=CA&category=now&page=1
 
 ### 6.1 Frontend Config
 
-`frontend/config.js`:
+`frontend-react/public/config.js`:
 
 ```js
 window.APP_CONFIG = {
@@ -400,7 +400,7 @@ Local validation:
 ```bash
 python3 -m unittest discover -s tests
 python3 -m py_compile backend/lambda_function.py tests/test_lambda_auth.py tests/test_frontend_auth.py
-node --check frontend/app.js
+cd frontend-react && npm ci && npm run build
 sam validate --template-file infra/template.yaml
 sam build --template-file infra/template.yaml
 ```
@@ -408,8 +408,9 @@ sam build --template-file infra/template.yaml
 Local frontend:
 
 ```bash
-cd frontend
-python3 -m http.server 8000
+cd frontend-react
+npm install
+npm run dev
 ```
 
 Open `http://localhost:8000/`.
@@ -418,7 +419,7 @@ Open `http://localhost:8000/`.
 
 GitHub Actions workflows:
 
-- `CI`: tests, Python compile checks, frontend JavaScript syntax check, `sam validate`, and `sam build`.
+- `CI`: tests, Python compile checks, a production React build, `sam validate`, and `sam build`.
 - `Deploy Backend`: manual SAM deployment for Cognito, API Gateway, Lambda, and DynamoDB.
 - `Deploy Frontend`: manual S3 sync for frontend assets and CloudFront cache invalidation.
 
@@ -444,7 +445,8 @@ sam deploy --guided
 Frontend:
 
 ```bash
-aws s3 sync frontend/ s3://<frontend-bucket> --exclude "config.example.js"
+cd frontend-react && npm ci && npm run build
+aws s3 sync dist/ s3://<frontend-bucket> --delete
 aws cloudfront create-invalidation --distribution-id <distribution-id> --paths "/*"
 ```
 

@@ -38,8 +38,13 @@ jobs:
       - name: Compile Python files
         run: python3 -m py_compile backend/lambda_function.py tests/test_lambda_auth.py tests/test_frontend_auth.py
 
-      - name: Check frontend JavaScript
-        run: node --check frontend/app.js
+      - name: Install React frontend dependencies
+        working-directory: frontend-react
+        run: npm ci
+
+      - name: Build React frontend
+        working-directory: frontend-react
+        run: npm run build
 
       - name: Validate AWS SAM template
         run: sam validate --template-file infra/template.yaml

@@ -33,14 +33,29 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Check frontend JavaScript
-        run: node --check frontend/app.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install React frontend dependencies
+        working-directory: frontend-react
+        run: npm ci
+
+      - name: Build React frontend
+        working-directory: frontend-react
+        run: npm run build
 
       - name: Upload frontend assets
         run: |
-          aws s3 sync frontend/ "s3://$S3_BUCKET" \
-            --exclude "config.example.js" \
+          aws s3 sync frontend-react/dist/ "s3://$S3_BUCKET" \
+            --delete \
             --cache-control "public, max-age=60"
+
+      - name: Apply long-lived cache headers to versioned assets
+        run: |
+          aws s3 sync frontend-react/dist/assets/ "s3://$S3_BUCKET/assets" \
+            --cache-control "public, max-age=31536000, immutable"
 
       - name: Invalidate CloudFront cache
         if: ${{ env.CLOUDFRONT_DISTRIBUTION_ID != '' }}
