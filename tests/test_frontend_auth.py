@@ -44,13 +44,12 @@ class FrontendAuthTests(unittest.TestCase):
     def test_backend_api_requests_use_authenticated_fetch(self):
         self.assertIn('headers.set("Authorization"', self.api_js)
         self.assertIn("getValidAccessToken", self.api_js)
-        self.assertIn("config.legacyApiUrl", self.api_js)
+        self.assertIn("config.apiUrl", self.api_js)
         self.assertIn("apiFetch", self.tasks_jsx)
 
     def test_runtime_config_contains_cognito_values(self):
         for key in (
             "API_URL",
-            "LEGACY_API_URL",
             "COGNITO_DOMAIN",
             "COGNITO_CLIENT_ID",
             "COGNITO_REDIRECT_URI",

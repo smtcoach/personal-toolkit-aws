@@ -23,12 +23,6 @@ export function saveWeatherCity(city) {
   localStorage.setItem(WEATHER_STORAGE_KEY, JSON.stringify(city));
 }
 
-export function getMovieRegionFromWeatherCity() {
-  const city = getSavedWeatherCity();
-  const code = city?.countryCode?.trim?.().toUpperCase() || "";
-  return /^[A-Z]{2}$/.test(code) ? code : "CA";
-}
-
 export function decodeWmo(code) {
   if (code == null || Number.isNaN(Number(code))) return { icon: "☁", text: "Current conditions" };
   const c = Number(code);

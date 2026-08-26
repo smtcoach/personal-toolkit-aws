@@ -37,7 +37,7 @@ The earlier concept used card-based sections for:
 - Tasks.
 - Nearby restaurant recommendations.
 
-The current active product changed the feature mix and now includes weather, news, movies, and tasks.
+The current active product changed the feature mix and now includes weather, news, and tasks.
 
 ## Card Style
 

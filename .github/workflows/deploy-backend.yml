@@ -1,4 +1,4 @@
-name: Deploy Backend
+name: Deploy Cognito
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ on:
 
 jobs:
   deploy:
-    name: Build and deploy backend
+    name: Deploy Cognito resources
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-2
@@ -26,7 +26,6 @@ jobs:
       STACK_NAME: ${{ inputs.stack_name }}
       FRONTEND_CALLBACK_URL: ${{ inputs.frontend_callback_url }}
       FRONTEND_LOGOUT_URL: ${{ inputs.frontend_logout_url }}
-      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -74,10 +73,8 @@ jobs:
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --parameter-overrides \
-              StageName=prod \
               FrontendCallbackUrl="$FRONTEND_CALLBACK_URL" \
-              FrontendLogoutUrl="$FRONTEND_LOGOUT_URL" \
-              TmdbApiKey="$TMDB_API_KEY"
+              FrontendLogoutUrl="$FRONTEND_LOGOUT_URL"
 
       - name: Show stack outputs
         run: |

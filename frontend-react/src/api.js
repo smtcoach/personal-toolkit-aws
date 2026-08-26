@@ -18,11 +18,7 @@ export async function apiFetch(path, options, auth, setAuth, onAuthExpired) {
 
   const headers = new Headers(options?.headers || {});
   headers.set("Authorization", `Bearer ${token}`);
-  const baseUrl = path === "/news" || path.startsWith("/movies?")
-    ? config.legacyApiUrl
-    : config.apiUrl;
-
-  const res = await fetch(`${baseUrl}${path}`, {
+  const res = await fetch(`${config.apiUrl}${path}`, {
     ...options,
     headers
   });

@@ -1,86 +1,49 @@
-# Personal Toolkit AWS
+# CloudDesk
 
-Personal Toolkit is an AWS personal dashboard built with React, Vite, Express,
-TypeScript, Docker, Amazon EC2, Cognito, DynamoDB, S3, and CloudFront. The Tasks
-API runs in a container on EC2; news and movie endpoints remain on the legacy
-Lambda API during the staged migration.
-
-The application combines authenticated personal tasks, weather, international news, and local movie discovery in a single private dashboard. It is designed as a production-oriented portfolio project rather than a basic CRUD demo: authentication, per-user data isolation, infrastructure as code, and GitHub Actions CI/CD are all included.
-
-## Highlights
-
-- Secure sign-in with Amazon Cognito Hosted UI and OAuth 2.0 Authorization Code + PKCE.
-- Per-user task isolation using Cognito `sub` claims and DynamoDB partition keys.
-- Containerized Express and TypeScript Tasks API running on Amazon EC2.
-- Staged migration that keeps the Lambda news and movie integrations available.
-- Static frontend deployed to S3 and served through CloudFront over HTTPS.
-- External data integrations for RSS news, TMDB movies, and Open-Meteo weather.
-- GitHub Actions CI/CD for tests, SAM validation, SAM build, backend deployment, frontend S3 sync, and CloudFront invalidation.
-
-## Architecture
-
-```text
-Browser
-  -> CloudFront
-       -> S3 static frontend
-       -> /api/v1/* -> EC2 -> Docker -> Express Tasks API
-  -> Cognito Hosted UI for authentication
-  -> DynamoDB for user-scoped tasks
-  -> API Gateway + Lambda during migration
-       -> RSS feeds for news
-       -> TMDB for movie data
-
-Browser also calls Open-Meteo and OpenStreetMap Nominatim directly for weather and location lookup.
-```
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system design and deployment flow.
+CloudDesk is a small full-stack AWS portfolio project built with React,
+Express, TypeScript, Docker, EC2, Cognito, DynamoDB, S3, and CloudFront.
 
 ## Features
 
-- Authentication: sign in, sign out, session restore, token refresh, PKCE callback handling.
-- Tasks: create, complete, star, rename, delete, filter, and persist tasks per authenticated user.
-- News: aggregate international RSS headlines with backend degradation handling and client-side RSS fallback.
-- Movies: browse now-playing and upcoming movies by inferred local region through TMDB.
-- Weather: search cities, use browser geolocation, view current weather and a 5-day forecast.
-- UI: light/dark theme, responsive dashboard layout, reduced-motion support, and accessible controls.
+- Cognito sign-in with Authorization Code and PKCE.
+- Private tasks stored separately for each user.
+- International news loaded by the Express API from RSS feeds.
+- Weather and city search loaded directly from Open-Meteo.
+- Docker deployment to a small EC2 instance.
 
-## Repository Structure
+## Project structure
 
 ```text
-todo_aws/
-├── frontend-react/              React + Vite SPA deployed to S3
-├── backend/lambda_function.py    Python Lambda handler and route logic
-├── backend-express/              Express + TypeScript Tasks API migration
-├── infra/template.yaml           AWS SAM template
-├── infra-express/template.yaml   EC2, Docker, ECR, and DynamoDB migration stack
-├── tests/                        Unit tests for auth and isolation behavior
-├── .github/workflows/            CI/CD workflows
-├── ARCHITECTURE.md               Architecture and deployment overview
-├── APPLICATION_DOCUMENTATION.md  Detailed application documentation
-└── archive/                      Historical design notes
+frontend-react/       React frontend
+backend-express/      Express and TypeScript API
+infra-express/        EC2, DynamoDB, ECR, S3, IAM, and CodeBuild
+infra/                Cognito CloudFormation template
+.github/workflows/    CI and deployment workflows
 ```
 
-## Local Checks
+## Express routes
+
+```text
+GET    /health
+GET    /api/v1/tasks
+POST   /api/v1/tasks
+PATCH  /api/v1/tasks/:taskId
+DELETE /api/v1/tasks/:taskId
+GET    /api/v1/news
+```
+
+All `/api/v1` routes require a Cognito access token.
+
+## Local development
 
 ```bash
-python3 -m unittest discover -s tests
-python3 -m py_compile backend/lambda_function.py tests/test_lambda_auth.py tests/test_frontend_auth.py
-cd backend-express && npm ci && npm run typecheck && npm run build
-cd frontend-react && npm ci && npm run build
-sam validate --template-file infra/template.yaml
-sam build --template-file infra/template.yaml
+cd backend-express
+cp .env.example .env
+npm install
+npm run dev
 ```
 
-## Express Backend Migration
-
-The replacement Tasks API is deployed from `backend-express/`. It uses
-Express, TypeScript, Cognito access-token verification, DynamoDB, and Docker.
-The existing Lambda API remains active for news and movie endpoints until those
-features are migrated.
-
-See `backend-express/README.md` for local setup and API endpoints.
-
-## Local Frontend Preview
+In another terminal:
 
 ```bash
 cd frontend-react
@@ -88,51 +51,5 @@ npm install
 npm run dev
 ```
 
-Then open:
-
-```text
-http://localhost:8000/
-```
-
-The SAM template keeps localhost callback URLs available for local Cognito testing.
-
-## CI/CD
-
-The project uses GitHub Actions:
-
-- `CI`: runs Python unit tests, Python compile checks, a production React build, `sam validate`, and `sam build`.
-- `Deploy Backend`: manually deploys the AWS SAM backend stack with Cognito, API Gateway, Lambda, and DynamoDB.
-- `Deploy Express Backend`: builds the Express Docker image in CodeBuild and updates EC2 through Systems Manager.
-- `Deploy Frontend`: builds the React app, syncs `frontend-react/dist/` to S3, and invalidates the CloudFront distribution.
-
-Required GitHub repository secrets:
-
-```text
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-TMDB_API_KEY        # optional for deployment, required for the movie feature
-```
-
-## Deployment Notes
-
-After backend deployment, copy the SAM outputs into `frontend-react/public/config.js`:
-
-```text
-ApiUrl
-AwsRegion
-CognitoDomain
-CognitoClientId
-```
-
-For deployed Cognito callback/logout URLs, use HTTPS CloudFront URLs. Cognito allows `http://` only for localhost development URLs.
-
-## Portfolio Summary
-
-This project demonstrates:
-
-- Serverless AWS application design.
-- Cognito-based authentication and JWT authorization.
-- Secure multi-user data isolation.
-- Infrastructure as code with AWS SAM.
-- CI/CD with GitHub Actions.
-- Static frontend deployment through S3 and CloudFront.
+The production frontend is served from CloudFront. Requests under `/api/v1/*`
+are forwarded to the Express container on EC2.

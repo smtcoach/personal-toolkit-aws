@@ -7,7 +7,6 @@ import {
   signOut
 } from "./auth";
 import { getAppConfig } from "./config";
-import MoviesPanel from "./components/MoviesPanel";
 import NewsPanel from "./components/NewsPanel";
 import TasksPanel from "./components/TasksPanel";
 import WeatherPanel from "./components/WeatherPanel";
@@ -27,7 +26,6 @@ function App() {
   const [auth, setAuth] = useState(() => loadStoredAuth());
   const [authError, setAuthError] = useState("");
   const [authReady, setAuthReady] = useState(false);
-  const [locationVersion, setLocationVersion] = useState(0);
   const [theme, setTheme] = useState(() => {
     try {
       const stored = localStorage.getItem("todoApp_theme");
@@ -149,7 +147,7 @@ function App() {
           Sign in to your toolkit
         </h2>
         <p className="auth-copy">
-          Access your private tasks, weather, world news, and local movies from a
+          Access your private tasks, weather, and world news from a
           Cognito-protected React dashboard backed by Express, TypeScript, Docker,
           Amazon EC2, and DynamoDB.
         </p>
@@ -181,15 +179,9 @@ function App() {
         <div className="dashboard-content">
           <main className="dashboard-main" aria-label="Main content">
             <NewsPanel auth={auth} setAuth={setAuth} onAuthExpired={setAuthError} />
-            <MoviesPanel
-              auth={auth}
-              setAuth={setAuth}
-              onAuthExpired={setAuthError}
-              locationVersion={locationVersion}
-            />
           </main>
           <aside className="dashboard-sidebar" aria-label="Productivity tools">
-            <WeatherPanel onLocationChanged={() => setLocationVersion(version => version + 1)} />
+            <WeatherPanel />
             <TasksPanel auth={auth} setAuth={setAuth} onAuthExpired={setAuthError} />
           </aside>
         </div>

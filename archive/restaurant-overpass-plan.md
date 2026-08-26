@@ -92,4 +92,4 @@ The feature should not present OSM data as a user-review ranking product.
 
 ## Archive Status
 
-This feature was not implemented in the active dashboard. The current product uses tasks, weather, news, and movies.
+This feature was not implemented in the active dashboard. The current product uses tasks, weather, and news.

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../api";
-import { fetchNewsFallback } from "../news";
 
 function formatNewsTime(iso) {
   const date = new Date(iso);
@@ -19,12 +18,10 @@ function NewsPanel({ auth, setAuth, onAuthExpired }) {
   const [source, setSource] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [usingFallback, setUsingFallback] = useState(false);
 
   async function loadNews() {
     setLoading(true);
     setError("");
-    setUsingFallback(false);
     try {
       const res = await apiFetch("/news", undefined, auth, setAuth, onAuthExpired);
       const data = await res.json().catch(() => ({}));
@@ -33,12 +30,7 @@ function NewsPanel({ auth, setAuth, onAuthExpired }) {
         setItems([]);
         return;
       }
-      let nextItems = Array.isArray(data.items) ? data.items : Array.isArray(data) ? data : [];
-      if (!nextItems.length) {
-        nextItems = await fetchNewsFallback();
-        setUsingFallback(nextItems.length > 0);
-      }
-      setItems(nextItems);
+      setItems(Array.isArray(data.items) ? data.items : []);
     } catch (err) {
       setError(err.message === "Authentication required" ? "" : "Network error. Could not load news.");
       setItems([]);
@@ -87,9 +79,6 @@ function NewsPanel({ auth, setAuth, onAuthExpired }) {
             ))}
           </div>
         </div>
-      ) : null}
-      {usingFallback ? (
-        <p className="news-fallback-note muted">Headlines loaded through public RSS mirrors.</p>
       ) : null}
       <ul className="news-list">
         {loading ? <li className="news-loading">Loading...</li> : null}

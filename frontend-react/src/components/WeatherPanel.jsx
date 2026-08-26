@@ -12,7 +12,7 @@ import {
   searchCities
 } from "../weather";
 
-function WeatherPanel({ onLocationChanged }) {
+function WeatherPanel() {
   const [city, setCity] = useState(() => getSavedWeatherCity() || DEFAULT_WEATHER_CITY);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -70,7 +70,6 @@ function WeatherPanel({ onLocationChanged }) {
     setCity(nextCity);
     setQuery("");
     setResults([]);
-    onLocationChanged?.();
     await loadWeather(nextCity);
   }
 
@@ -88,7 +87,6 @@ function WeatherPanel({ onLocationChanged }) {
       const nextCity = { ...pos, label: place.label, countryCode: place.countryCode };
       saveWeatherCity(nextCity);
       setCity(nextCity);
-      onLocationChanged?.();
       await loadWeather(nextCity);
     } catch {
       setError("Could not get location. Search for a city instead.");
