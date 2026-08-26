@@ -1,6 +1,9 @@
 # Personal Toolkit AWS
 
-Personal Toolkit is a serverless personal dashboard built with React, Vite, AWS SAM, Amazon Cognito, API Gateway, Lambda, DynamoDB, S3, and CloudFront.
+Personal Toolkit is an AWS personal dashboard built with React, Vite, Express,
+TypeScript, Docker, Amazon EC2, Cognito, DynamoDB, S3, and CloudFront. The Tasks
+API runs in a container on EC2; news and movie endpoints remain on the legacy
+Lambda API during the staged migration.
 
 The application combines authenticated personal tasks, weather, international news, and local movie discovery in a single private dashboard. It is designed as a production-oriented portfolio project rather than a basic CRUD demo: authentication, per-user data isolation, infrastructure as code, and GitHub Actions CI/CD are all included.
 
@@ -8,7 +11,8 @@ The application combines authenticated personal tasks, weather, international ne
 
 - Secure sign-in with Amazon Cognito Hosted UI and OAuth 2.0 Authorization Code + PKCE.
 - Per-user task isolation using Cognito `sub` claims and DynamoDB partition keys.
-- Serverless backend with API Gateway HTTP API and a Python Lambda router.
+- Containerized Express and TypeScript Tasks API running on Amazon EC2.
+- Staged migration that keeps the Lambda news and movie integrations available.
 - Static frontend deployed to S3 and served through CloudFront over HTTPS.
 - External data integrations for RSS news, TMDB movies, and Open-Meteo weather.
 - GitHub Actions CI/CD for tests, SAM validation, SAM build, backend deployment, frontend S3 sync, and CloudFront invalidation.
@@ -18,11 +22,11 @@ The application combines authenticated personal tasks, weather, international ne
 ```text
 Browser
   -> CloudFront
-  -> S3 static frontend
+       -> S3 static frontend
+       -> /api/v1/* -> EC2 -> Docker -> Express Tasks API
   -> Cognito Hosted UI for authentication
-  -> API Gateway HTTP API with JWT authorizer
-  -> Lambda
-       -> DynamoDB for user-scoped tasks
+  -> DynamoDB for user-scoped tasks
+  -> API Gateway + Lambda during migration
        -> RSS feeds for news
        -> TMDB for movie data
 
@@ -46,7 +50,9 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system design and deployment
 todo_aws/
 ├── frontend-react/              React + Vite SPA deployed to S3
 ├── backend/lambda_function.py    Python Lambda handler and route logic
+├── backend-express/              Express + TypeScript Tasks API migration
 ├── infra/template.yaml           AWS SAM template
+├── infra-express/template.yaml   EC2, Docker, ECR, and DynamoDB migration stack
 ├── tests/                        Unit tests for auth and isolation behavior
 ├── .github/workflows/            CI/CD workflows
 ├── ARCHITECTURE.md               Architecture and deployment overview
@@ -59,10 +65,20 @@ todo_aws/
 ```bash
 python3 -m unittest discover -s tests
 python3 -m py_compile backend/lambda_function.py tests/test_lambda_auth.py tests/test_frontend_auth.py
+cd backend-express && npm ci && npm run typecheck && npm run build
 cd frontend-react && npm ci && npm run build
 sam validate --template-file infra/template.yaml
 sam build --template-file infra/template.yaml
 ```
+
+## Express Backend Migration
+
+The replacement Tasks API is deployed from `backend-express/`. It uses
+Express, TypeScript, Cognito access-token verification, DynamoDB, and Docker.
+The existing Lambda API remains active for news and movie endpoints until those
+features are migrated.
+
+See `backend-express/README.md` for local setup and API endpoints.
 
 ## Local Frontend Preview
 
@@ -86,6 +102,7 @@ The project uses GitHub Actions:
 
 - `CI`: runs Python unit tests, Python compile checks, a production React build, `sam validate`, and `sam build`.
 - `Deploy Backend`: manually deploys the AWS SAM backend stack with Cognito, API Gateway, Lambda, and DynamoDB.
+- `Deploy Express Backend`: builds the Express Docker image in CodeBuild and updates EC2 through Systems Manager.
 - `Deploy Frontend`: builds the React app, syncs `frontend-react/dist/` to S3, and invalidates the CloudFront distribution.
 
 Required GitHub repository secrets:

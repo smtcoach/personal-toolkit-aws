@@ -150,13 +150,13 @@ function App() {
         </h2>
         <p className="auth-copy">
           Access your private tasks, weather, world news, and local movies from a
-          Cognito-protected React dashboard backed by API Gateway, Lambda, and
-          DynamoDB.
+          Cognito-protected React dashboard backed by Express, TypeScript, Docker,
+          Amazon EC2, and DynamoDB.
         </p>
         <ul className="auth-feature-list" aria-label="Application highlights">
           <li>Private tasks isolated per account</li>
           <li>JWT-secured API access</li>
-          <li>Serverless AWS deployment</li>
+          <li>Containerized AWS deployment</li>
         </ul>
         {authError ? (
           <p className="auth-error" role="alert">

@@ -38,6 +38,14 @@ jobs:
       - name: Compile Python files
         run: python3 -m py_compile backend/lambda_function.py tests/test_lambda_auth.py tests/test_frontend_auth.py
 
+      - name: Install Express backend dependencies
+        working-directory: backend-express
+        run: npm ci
+
+      - name: Build Express backend
+        working-directory: backend-express
+        run: npm run typecheck && npm run build
+
       - name: Install React frontend dependencies
         working-directory: frontend-react
         run: npm ci

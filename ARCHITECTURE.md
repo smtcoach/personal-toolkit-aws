@@ -1,5 +1,10 @@
 # Architecture
 
+> Migration status: the authenticated Tasks API now runs as a TypeScript Express
+> container on Amazon EC2 behind CloudFront `/api/*`. The existing API Gateway
+> and Lambda remain active for news and movie endpoints. The new infrastructure
+> is defined in `infra-express/template.yaml`.
+
 ## System Goal
 
 Personal Toolkit is a serverless personal dashboard that demonstrates authenticated multi-user data access, AWS infrastructure as code, and CI/CD delivery. The application is intentionally small in product scope but production-oriented in its architecture.

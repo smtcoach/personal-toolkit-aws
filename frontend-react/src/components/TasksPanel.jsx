@@ -65,7 +65,7 @@ function TaskRow({ task, onCompleted, onStarred, onPriority, onRename, onDelete 
       />
       <button
         type="button"
-        className={task.starred ? "star-btn is-starred" : "star-btn"}
+        className={task.starred ? "btn-star starred" : "btn-star"}
         aria-label={task.starred ? "Remove star" : "Star task"}
         onClick={() => onStarred(task.taskId, !task.starred)}
       >
@@ -202,13 +202,13 @@ function TasksPanel({ auth, setAuth, onAuthExpired }) {
     }
   }
 
-  async function updateTask(op, taskId, payload, fallback) {
+  async function updateTask(taskId, payload, fallback) {
     setListError("");
     try {
-      const res = await request("/tasks", {
-        method: "POST",
+      const res = await request(`/tasks/${encodeURIComponent(taskId)}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ op, taskId, ...payload })
+        body: JSON.stringify(payload)
       });
       if (!res.ok) {
         setListError(await readApiErrorMessage(res, fallback));
@@ -227,7 +227,7 @@ function TasksPanel({ auth, setAuth, onAuthExpired }) {
     if (!window.confirm(`Delete "${label}"?`)) return;
     setListError("");
     try {
-      const res = await request(`/tasks/${taskId}`, { method: "DELETE" });
+      const res = await request(`/tasks/${encodeURIComponent(taskId)}`, { method: "DELETE" });
       if (!res.ok) {
         setListError(await readApiErrorMessage(res, "Could not delete task."));
         return;
@@ -300,21 +300,20 @@ function TasksPanel({ auth, setAuth, onAuthExpired }) {
               key={task.taskId}
               task={task}
               onCompleted={(taskId, completed) =>
-                updateTask("setCompleted", taskId, { completed }, "Could not update task.")
+                updateTask(taskId, { completed }, "Could not update task.")
               }
               onStarred={(taskId, starred) =>
-                updateTask("setStarred", taskId, { starred }, "Could not update task.")
+                updateTask(taskId, { starred }, "Could not update task.")
               }
               onPriority={(taskId, nextPriority) =>
                 updateTask(
-                  "setPriority",
                   taskId,
                   { priority: normalizeTaskPriority(nextPriority) },
                   "Could not update task priority."
                 )
               }
               onRename={(taskId, nextTitle) =>
-                updateTask("rename", taskId, { title: nextTitle }, "Could not rename task.")
+                updateTask(taskId, { title: nextTitle }, "Could not rename task.")
               }
               onDelete={deleteTask}
             />

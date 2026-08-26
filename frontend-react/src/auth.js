@@ -138,6 +138,9 @@ export async function completeAuthRedirect(config = getAppConfig()) {
   const verifier = sessionStorage.getItem(AUTH_PKCE_KEY);
   if (!expectedState || expectedState !== state || !verifier) {
     clearAuth();
+    url.searchParams.delete("code");
+    url.searchParams.delete("state");
+    history.replaceState({}, document.title, url.pathname + url.search + url.hash);
     return {
       handled: true,
       auth: null,

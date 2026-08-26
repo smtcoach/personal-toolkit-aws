@@ -44,11 +44,13 @@ class FrontendAuthTests(unittest.TestCase):
     def test_backend_api_requests_use_authenticated_fetch(self):
         self.assertIn('headers.set("Authorization"', self.api_js)
         self.assertIn("getValidAccessToken", self.api_js)
+        self.assertIn("config.legacyApiUrl", self.api_js)
         self.assertIn("apiFetch", self.tasks_jsx)
 
     def test_runtime_config_contains_cognito_values(self):
         for key in (
             "API_URL",
+            "LEGACY_API_URL",
             "COGNITO_DOMAIN",
             "COGNITO_CLIENT_ID",
             "COGNITO_REDIRECT_URI",
@@ -60,11 +62,12 @@ class FrontendAuthTests(unittest.TestCase):
         self.assertIn("react", self.package["dependencies"])
         self.assertEqual(self.package["scripts"]["build"], "vite build")
 
-    def test_task_priority_is_sent_for_create_and_update(self):
+    def test_task_priority_and_rest_updates_are_present(self):
         for snippet in (
             'const PRIORITIES = ["low", "normal", "high"]',
             'priority: normalizeTaskPriority(priority)',
-            '"setPriority"',
+            'method: "PATCH"',
+            '`/tasks/${encodeURIComponent(taskId)}`',
         ):
             self.assertIn(snippet, self.tasks_jsx)
 

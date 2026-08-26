@@ -1,5 +1,10 @@
 # Personal Toolkit Application Documentation
 
+> Current migration status: Tasks are served by the Express/TypeScript Docker API
+> on Amazon EC2 through CloudFront `/api/v1/*`. News and movie requests continue
+> to use the existing API Gateway/Lambda backend. See `backend-express/README.md`
+> and `infra-express/README.md` for the new backend and infrastructure details.
+
 ## 1. Overview
 
 Personal Toolkit is a serverless personal dashboard for authenticated users. It combines private task management, weather, international news, and local movie discovery in one lightweight web application.
