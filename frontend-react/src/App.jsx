@@ -177,8 +177,11 @@ function App() {
       </section>
       ) : (
         <div className="dashboard-content">
-          <main className="dashboard-main" aria-label="Main content">
+          <aside className="dashboard-news" aria-label="Latest news">
             <NewsPanel auth={auth} setAuth={setAuth} onAuthExpired={setAuthError} />
+          </aside>
+          <main className="dashboard-main" aria-label="Subscription workspace">
+            <div className="dashboard-workspace" />
           </main>
           <aside className="dashboard-sidebar" aria-label="Productivity tools">
             <WeatherPanel />

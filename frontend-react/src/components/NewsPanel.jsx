@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "../api";
 
 function formatNewsTime(iso) {
@@ -15,7 +15,6 @@ function formatNewsTime(iso) {
 
 function NewsPanel({ auth, setAuth, onAuthExpired }) {
   const [items, setItems] = useState([]);
-  const [source, setSource] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -44,12 +43,6 @@ function NewsPanel({ auth, setAuth, onAuthExpired }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const sources = useMemo(
-    () => [...new Set(items.map(item => item.source).filter(Boolean))].sort(),
-    [items]
-  );
-  const visibleItems = source === "all" ? items : items.filter(item => item.source === source);
-
   return (
     <section className="card card-news" aria-labelledby="newsHeading">
       <div className="card-title-row">
@@ -60,31 +53,11 @@ function NewsPanel({ auth, setAuth, onAuthExpired }) {
           ↻
         </button>
       </div>
-      {sources.length ? (
-        <div className="news-filter-bar">
-          <span className="news-filter-label muted">Source</span>
-          <div className="news-filter-chips">
-            <button type="button" className={source === "all" ? "chip is-active" : "chip"} onClick={() => setSource("all")}>
-              All
-            </button>
-            {sources.map(src => (
-              <button
-                type="button"
-                key={src}
-                className={source === src ? "chip is-active" : "chip"}
-                onClick={() => setSource(src)}
-              >
-                {src}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
       <ul className="news-list">
         {loading ? <li className="news-loading">Loading...</li> : null}
         {error ? <li className="news-error">{error}</li> : null}
-        {!loading && !error && !visibleItems.length ? <li className="news-loading">No headlines found.</li> : null}
-        {visibleItems.map(item => (
+        {!loading && !error && !items.length ? <li className="news-loading">No headlines found.</li> : null}
+        {items.map(item => (
           <li className="news-item" key={`${item.url}-${item.title}`}>
             <a href={item.url} target="_blank" rel="noopener noreferrer">
               <div className="news-item-main">
