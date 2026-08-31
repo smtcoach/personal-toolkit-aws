@@ -10,6 +10,7 @@ import { getAppConfig } from "./config";
 import NewsPanel from "./components/NewsPanel";
 import TasksPanel from "./components/TasksPanel";
 import WeatherPanel from "./components/WeatherPanel";
+import SubscriptionsPanel from './components/SubscriptionsPanel';
 
 function formatDashboardDate() {
   return new Intl.DateTimeFormat(undefined, {
@@ -181,7 +182,7 @@ function App() {
             <NewsPanel auth={auth} setAuth={setAuth} onAuthExpired={setAuthError} />
           </aside>
           <main className="dashboard-main" aria-label="Subscription workspace">
-            <div className="dashboard-workspace" />
+            <SubscriptionsPanel auth={auth} setAuth={setAuth} onAuthExpired={setAuthError} />
           </main>
           <aside className="dashboard-sidebar" aria-label="Productivity tools">
             <WeatherPanel />

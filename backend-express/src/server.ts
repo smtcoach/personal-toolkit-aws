@@ -1,8 +1,10 @@
 import cors from "cors";
 import express from "express";
+import multer from "multer";
 import { authenticate, type UserRequest } from "./auth.js";
 import { config } from "./config.js";
 import { getNews } from "./news.js";
+import dayjs from 'dayjs';
 import {
   addTask,
   editTask,
@@ -11,6 +13,8 @@ import {
   type TaskChanges,
   type TaskPriority
 } from "./tasks.js";
+import { KeyObject } from "crypto";
+import { addSubscription } from "./subscription.js";
 
 const app = express();
 
@@ -88,6 +92,46 @@ app.delete("/api/v1/tasks/:taskId", async (req, res) => {
 
 app.get("/api/v1/news", async (_req, res) => {
   res.json({ items: await getNews() });
+});
+
+const upload = multer({
+  storage: multer.memoryStorage()
+});
+
+app.post('/api/v1/subscription/analyze',
+  upload.single("screenshot"),
+  async (req, res, next) => {
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({
+        message: "No image uploaded"
+      });
+    }
+    console.log("Filename:", file.originalname);
+    console.log("Type:", file.mimetype);
+    console.log("Size:", Math.trunc((file.size) / 1000), 'KB');
+    const example = {
+      name: 'netflex',
+      cost: '$21/month',
+      date: dayjs().format('YYYY, DD')
+    }
+
+
+    return res.status(201).json(example);
+  });
+
+app.post('/api/v1/subscription/submit', async (req, res, next) => {
+  const userId = (req as UserRequest).userId!;
+  console.log(req.body);
+  const name = req.body.name;
+  const cost = req.body.cost;
+  const date = req.body.date;
+  const entry = await addSubscription(userId, name, cost, date);
+  console.log(entry);
+  res.status(201).json({
+    message: 'successfully submit',
+    data: entry
+  });
 });
 
 app.use((_req, res) => {

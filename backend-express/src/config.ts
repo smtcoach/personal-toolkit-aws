@@ -14,6 +14,7 @@ export const config = {
   port: Number(process.env.PORT || 3000),
   awsRegion: process.env.AWS_REGION || "us-east-2",
   tasksTableName: required("TASKS_TABLE_NAME"),
+  subscriptionsTableName: required('SUBSCRIPTIONS_TABLE_NAME'),
   cognitoUserPoolId: required("COGNITO_USER_POOL_ID"),
   cognitoClientId: required("COGNITO_CLIENT_ID"),
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:8000"
