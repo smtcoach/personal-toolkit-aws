@@ -19,6 +19,9 @@ Parameters:
     Type: String
   CognitoClientId:
     Type: String
+  SubscriptionTableName:
+    Type: String
+    Default: clouddesk-subscriptions
   CorsOrigin:
     Type: String
     Default: https://d1l863cphghqlg.cloudfront.net
@@ -141,6 +144,18 @@ Resources:
                   - dynamodb:Query
                   - dynamodb:UpdateItem
                 Resource: !GetAtt TasksTable.Arn
+        - PolicyName: CloudDeskSubscriptionsTableAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DeleteItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:UpdateItem
+                Resource: !Sub arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${SubscriptionTableName}
         - PolicyName: CloudDeskApiImagePull
           PolicyDocument:
             Version: "2012-10-17"
@@ -204,6 +219,7 @@ Resources:
                 -p 80:3000 \
                 -e AWS_REGION=${AWS::Region} \
                 -e TASKS_TABLE_NAME=${TasksTable} \
+                -e SUBSCRIPTIONS_TABLE_NAME=${SubscriptionTableName} \
                 -e COGNITO_USER_POOL_ID=${CognitoUserPoolId} \
                 -e COGNITO_CLIENT_ID=${CognitoClientId} \
                 -e CORS_ORIGIN=${CorsOrigin} \
@@ -298,6 +314,8 @@ Resources:
 Outputs:
   TasksTableName:
     Value: !Ref TasksTable
+  SubscriptionTableName:
+    Value: !Ref SubscriptionTableName
   RepositoryUri:
     Value: !GetAtt ApiRepository.RepositoryUri
   DeploymentBucketName:

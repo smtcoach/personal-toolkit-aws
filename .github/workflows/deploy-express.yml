@@ -57,6 +57,7 @@ jobs:
           echo "instance_id=$(output BackendInstanceId)" >> "$GITHUB_OUTPUT"
           echo "health_url=$(output BackendHealthUrl)" >> "$GITHUB_OUTPUT"
           echo "tasks_table=$(output TasksTableName)" >> "$GITHUB_OUTPUT"
+          echo "subscriptions_table=$(output SubscriptionTableName)" >> "$GITHUB_OUTPUT"
 
       - name: Package and upload build source
         env:
@@ -108,10 +109,11 @@ jobs:
           INSTANCE_ID: ${{ steps.stack.outputs.instance_id }}
           REPOSITORY_URI: ${{ steps.stack.outputs.repository_uri }}
           TASKS_TABLE: ${{ steps.stack.outputs.tasks_table }}
+          SUBSCRIPTIONS_TABLE: ${{ steps.stack.outputs.subscriptions_table }}
           COGNITO_USER_POOL_ID: us-east-2_Xv3FsshOw
           COGNITO_CLIENT_ID: 62nbd5t1j78c6n8bjici33lgdj
         run: |
-          deploy_command="aws s3 cp s3://$DEPLOYMENT_BUCKET/deploy-container.sh /tmp/deploy-container.sh && chmod +x /tmp/deploy-container.sh && /tmp/deploy-container.sh $REPOSITORY_URI $GITHUB_SHA $AWS_REGION $TASKS_TABLE $COGNITO_USER_POOL_ID $COGNITO_CLIENT_ID $CORS_ORIGIN"
+          deploy_command="aws s3 cp s3://$DEPLOYMENT_BUCKET/deploy-container.sh /tmp/deploy-container.sh && chmod +x /tmp/deploy-container.sh && /tmp/deploy-container.sh $REPOSITORY_URI $GITHUB_SHA $AWS_REGION $TASKS_TABLE $SUBSCRIPTIONS_TABLE $COGNITO_USER_POOL_ID $COGNITO_CLIENT_ID $CORS_ORIGIN"
           parameters=$(jq -n --arg command "$deploy_command" '{commands: [$command]}')
           command_id=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \

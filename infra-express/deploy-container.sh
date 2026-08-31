@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ "$#" -ne 7 ]]; then
-  echo "Usage: deploy-container.sh <repository-uri> <image-tag> <region> <table> <user-pool> <client-id> <cors-origin>"
+if [[ "$#" -ne 8 ]]; then
+  echo "Usage: deploy-container.sh <repository-uri> <image-tag> <region> <tasks-table> <subscriptions-table> <user-pool> <client-id> <cors-origin>"
   exit 2
 fi
 
@@ -10,9 +10,10 @@ repository_uri="$1"
 image_tag="$2"
 aws_region="$3"
 tasks_table="$4"
-cognito_user_pool_id="$5"
-cognito_client_id="$6"
-cors_origin="$7"
+subscriptions_table="$5"
+cognito_user_pool_id="$6"
+cognito_client_id="$7"
+cors_origin="$8"
 registry="${repository_uri%%/*}"
 
 aws ecr get-login-password --region "$aws_region" \
@@ -26,6 +27,7 @@ docker run -d \
   -p 80:3000 \
   -e AWS_REGION="$aws_region" \
   -e TASKS_TABLE_NAME="$tasks_table" \
+  -e SUBSCRIPTIONS_TABLE_NAME="$subscriptions_table" \
   -e COGNITO_USER_POOL_ID="$cognito_user_pool_id" \
   -e COGNITO_CLIENT_ID="$cognito_client_id" \
   -e CORS_ORIGIN="$cors_origin" \
