@@ -98,10 +98,11 @@ function WeatherPanel() {
   const current = weather?.current;
   const decoded = decodeWmo(current?.weather_code);
   const daily = weather?.daily;
+  const cityName = city.label.split(",")[0];
 
   return (
     <section className={error ? "card card-weather is-error" : "card card-weather"} aria-label="Weather">
-      <h2 className="card-title">{city.label} weather</h2>
+      <h2 className="card-title">{cityName}</h2>
       <form className="weather-search" onSubmit={runSearch}>
         <input
           type="text"

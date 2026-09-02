@@ -17,8 +17,8 @@
     "dayjs": "^1.11.23",
     "dotenv": "^17.0.0",
     "express": "^5.0.0",
-    "fast-xml-parser": "^5.0.0",
-    "multer": "^2.3.0"
+    "multer": "^2.3.0",
+    "openai": "^7.9.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.0",

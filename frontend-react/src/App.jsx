@@ -7,7 +7,6 @@ import {
   signOut
 } from "./auth";
 import { getAppConfig } from "./config";
-import NewsPanel from "./components/NewsPanel";
 import TasksPanel from "./components/TasksPanel";
 import WeatherPanel from "./components/WeatherPanel";
 import SubscriptionsPanel from './components/SubscriptionsPanel';
@@ -148,7 +147,7 @@ function App() {
           Sign in to your toolkit
         </h2>
         <p className="auth-copy">
-          Access your private tasks, weather, and world news from a
+          Access your private subscriptions, tasks, and weather from a
           Cognito-protected React dashboard backed by Express, TypeScript, Docker,
           Amazon EC2, and DynamoDB.
         </p>
@@ -178,9 +177,6 @@ function App() {
       </section>
       ) : (
         <div className="dashboard-content">
-          <aside className="dashboard-news" aria-label="Latest news">
-            <NewsPanel auth={auth} setAuth={setAuth} onAuthExpired={setAuthError} />
-          </aside>
           <main className="dashboard-main" aria-label="Subscription workspace">
             <SubscriptionsPanel auth={auth} setAuth={setAuth} onAuthExpired={setAuthError} />
           </main>

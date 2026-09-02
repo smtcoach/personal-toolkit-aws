@@ -17,5 +17,6 @@ export const config = {
   subscriptionsTableName: required('SUBSCRIPTIONS_TABLE_NAME'),
   cognitoUserPoolId: required("COGNITO_USER_POOL_ID"),
   cognitoClientId: required("COGNITO_CLIENT_ID"),
-  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:8000"
+  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:8000",
+  deepseekApiKey: required("DEEPSEEK_API_KEY")
 };

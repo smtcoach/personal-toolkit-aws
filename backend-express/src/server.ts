@@ -3,7 +3,6 @@ import express from "express";
 import multer from "multer";
 import { authenticate, type UserRequest } from "./auth.js";
 import { config } from "./config.js";
-import { getNews } from "./news.js";
 import dayjs from 'dayjs';
 import {
   addTask,
@@ -14,7 +13,7 @@ import {
   type TaskPriority
 } from "./tasks.js";
 import { KeyObject } from "crypto";
-import { addSubscription } from "./subscription.js";
+import { addSubscription, loadSubscription, deleteSubscription, updateSubscription, analyzeSubscriptionImage } from "./subscription.js";
 
 const app = express();
 
@@ -90,10 +89,6 @@ app.delete("/api/v1/tasks/:taskId", async (req, res) => {
   res.json({ message: "Task deleted" });
 });
 
-app.get("/api/v1/news", async (_req, res) => {
-  res.json({ items: await getNews() });
-});
-
 const upload = multer({
   storage: multer.memoryStorage()
 });
@@ -101,38 +96,118 @@ const upload = multer({
 app.post('/api/v1/subscription/analyze',
   upload.single("screenshot"),
   async (req, res, next) => {
+    const userId = (req as UserRequest).userId!;
     const file = req.file;
     if (!file) {
       return res.status(400).json({
         message: "No image uploaded"
       });
     }
-    console.log("Filename:", file.originalname);
-    console.log("Type:", file.mimetype);
-    console.log("Size:", Math.trunc((file.size) / 1000), 'KB');
-    const example = {
-      name: 'netflex',
-      cost: '$21/month',
-      date: dayjs().format('YYYY, DD')
-    }
-
-
-    return res.status(201).json(example);
+    const base64Image = req.file!.buffer.toString("base64");
+    const subscriptions = await loadSubscription(userId);
+    //console.log(subscriptions);
+    const result = await analyzeSubscriptionImage(req.file!.mimetype, base64Image, subscriptions);
+    console.log(result);
+    return res.status(201).json(result);
   });
 
 app.post('/api/v1/subscription/submit', async (req, res, next) => {
   const userId = (req as UserRequest).userId!;
   console.log(req.body);
-  const name = req.body.name;
-  const cost = req.body.cost;
-  const date = req.body.date;
-  const entry = await addSubscription(userId, name, cost, date);
+  const serviceName = req.body.serviceName;
+  const planName = req.body.planName;
+  const billingCycle = req.body.billingCycle;
+  const amount = req.body.amount;
+  const currency = req.body.currency;
+  const firstPaymentDate = req.body.firstPaymentDate;
+  const websiteUrl = req.body.websiteUrl;
+  const notes = req.body.notes;
+  const entry = await addSubscription(
+    userId,
+    serviceName,
+    planName,
+    billingCycle,
+    amount,
+    currency,
+    firstPaymentDate,
+    websiteUrl,
+    notes
+  );
   console.log(entry);
   res.status(201).json({
     message: 'successfully submit',
     data: entry
   });
 });
+
+app.get('/api/v1/subscription', async (req, res, next) => {
+  const userId = (req as UserRequest).userId!;
+  try {
+    const subscriptions = await loadSubscription(userId);
+    res.status(200).json(subscriptions);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Could not load subscription"
+    });
+  }
+});
+
+app.delete('/api/v1/subscription', async (req, res, _next) => {
+  const userId = (req as UserRequest).userId!;
+  const SK = req.body.SK;
+  try {
+    await deleteSubscription(userId, SK);
+    res.status(200).json({
+      message: "Subscription deleted"
+    });
+  } catch (error) {
+
+    res.status(500).json({
+      message: "Could not delete subscription"
+    });
+  }
+});
+
+app.put('/api/v1/subscription', async (req, res, _next) => {
+  const userId = (req as UserRequest).userId!;
+  const SK = req.body.SK;
+  const newServiceName = req.body.serviceName;
+  const newPlanName = req.body.planName;
+  const newBillingCycle = req.body.billingCycle;
+  const newAmount = req.body.amount;
+  const newCurrency = req.body.currency;
+  const newFirstPaymentDate = req.body.firstPaymentDate;
+  const newWebsiteUrl = req.body.websiteUrl;
+  const newNotes = req.body.notes;
+  if (newServiceName === undefined || newServiceName === null) {
+    return res.status(400).json({ message: 'input not valid' });
+  }
+  try {
+    await updateSubscription(
+      userId,
+      SK,
+      newServiceName,
+      newPlanName,
+      newBillingCycle,
+      newAmount,
+      newCurrency,
+      newFirstPaymentDate,
+      newWebsiteUrl,
+      newNotes
+    );
+    res.status(200).json({
+      message: "Subscription updated"
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Could not update subscription Info"
+    });
+  }
+
+
+})
 
 app.use((_req, res) => {
   res.status(404).json({ message: "Route not found" });
