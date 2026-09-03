@@ -18,6 +18,7 @@ function WeatherPanel() {
   const [results, setResults] = useState([]);
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
 
@@ -74,24 +75,29 @@ function WeatherPanel() {
   }
 
   async function useLocation() {
-    setLoading(true);
+    setLocating(true);
     setError("");
     try {
       const pos = await getGeoPosition(12000);
+      console.log(pos);
       let place = { label: "Current location", countryCode: "" };
       try {
         place = await reverseGeocodeLocation(pos.lat, pos.lon);
-      } catch {
+        console.log(place);
+      } catch(error) {
+        console.log(error);
         /* use generic location label */
       }
       const nextCity = { ...pos, label: place.label, countryCode: place.countryCode };
       saveWeatherCity(nextCity);
       setCity(nextCity);
+      console.log(city);
       await loadWeather(nextCity);
-    } catch {
+    } catch (error) {
+      console.log("Location error:", error);
       setError("Could not get location. Search for a city instead.");
     } finally {
-      setLoading(false);
+      setLocating(false);
     }
   }
 
@@ -117,9 +123,7 @@ function WeatherPanel() {
           Search
         </button>
       </form>
-      <button type="button" className="link-btn" onClick={useLocation}>
-        Use my location
-      </button>
+
       {results.length ? (
         <ul className="weather-city-results is-open" role="listbox" aria-label="City search results">
           {results.map(result => (

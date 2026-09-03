@@ -1,9 +1,9 @@
-const WEATHER_STORAGE_KEY = "todoApp_weatherCity";
+const WEATHER_STORAGE_KEY = "clouddesk_weatherCity";
 
 export const DEFAULT_WEATHER_CITY = {
-  lat: 43.6532,
-  lon: -79.3832,
-  label: "Toronto, Ontario, Canada",
+  lat: 45.4215,
+  lon: -75.6972,
+  label: "Ottawa, Ontario, Canada",
   countryCode: "CA"
 };
 
@@ -95,14 +95,12 @@ export function getGeoPosition(ms) {
       reject(new Error("Geolocation not available"));
       return;
     }
-    const timeout = setTimeout(() => reject(new Error("Location timeout")), ms);
+
     navigator.geolocation.getCurrentPosition(
       pos => {
-        clearTimeout(timeout);
         resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, label: "Your location" });
       },
       err => {
-        clearTimeout(timeout);
         reject(err);
       },
       { enableHighAccuracy: false, maximumAge: 300000, timeout: ms }

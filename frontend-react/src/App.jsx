@@ -102,7 +102,7 @@ function App() {
     <div className="dashboard-container">
       <header className="dashboard-header">
         <div className="dashboard-header-text">
-          <h1 className="dashboard-title">CloudDesk</h1>
+          <h1 className="dashboard-title">SubLens</h1>
           <p className="dashboard-date">{formatDashboardDate()}</p>
         </div>
         <div className="header-actions">
