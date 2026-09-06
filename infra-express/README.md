@@ -1,16 +1,28 @@
-# Express backend infrastructure
+# SubLens Express infrastructure
 
-The `clouddesk-express` CloudFormation stack creates:
+`template.yaml` defines the AWS resources used by the Dockerized Express backend:
 
-- one EC2 instance running Docker;
-- one DynamoDB tasks table;
-- one private ECR repository;
-- one deployment S3 bucket;
-- one CodeBuild project;
-- an Elastic IP, security group, IAM role, and SSM access.
+- one Amazon Linux 2023 EC2 instance with an Elastic IP;
+- one DynamoDB tasks table using on-demand billing;
+- IAM access to the separately named subscriptions table;
+- one private ECR repository with image scanning and a ten-image lifecycle limit;
+- one private S3 bucket for temporary deployment sources;
+- one CodeBuild project for Docker image builds;
+- IAM roles, an instance profile, and an HTTP security group.
 
-The application does not use nginx, an Application Load Balancer, or a NAT
-Gateway. CloudFront forwards `/api/v1/*` requests to the EC2 origin.
+The application does not use nginx, Lambda, API Gateway, an Application Load Balancer, or a NAT Gateway. CloudFront forwards `/api/v1/*` to port 80 on the EC2 origin, which maps to port 3000 in the Express container.
 
-Application deployments use `.github/workflows/deploy-express.yml`. CodeBuild
-creates the image and Systems Manager replaces the running container.
+## Deployment
+
+The `.github/workflows/deploy-express.yml` workflow performs the application deployment:
+
+1. Type-check and build the Express application.
+2. Upload the backend source archive to the deployment bucket.
+3. Ask CodeBuild to build and push a Docker image to ECR.
+4. Use Systems Manager to run `deploy-container.sh` on EC2.
+5. Replace the running container and inject its environment variables.
+6. Verify the public `/health` endpoint.
+
+The workflow receives `DEEPSEEK_API_KEY` from GitHub Actions secrets. It is not stored in the repository or Docker image.
+
+The default CloudFormation stack name is `clouddesk-express`; the older resource name is retained to avoid replacing working infrastructure when the frontend brand changed to SubLens.
